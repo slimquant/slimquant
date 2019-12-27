@@ -6,31 +6,16 @@ from logging import INFO
 from vnpy.event import EventEngine
 from vnpy.trader.setting import SETTINGS
 from vnpy.trader.engine import MainEngine
-
 from vnpy.gateway.okex import OkexGateway
-from vnpy.app.cta_strategy import CtaStrategyApp
 from vnpy.app.algo_trading import AlgoTradingApp
-from vnpy.app.algo_trading.engine import AlgoEngine
-#from vnpy.app.algo_trading.algos import EVENT_CTA_LOG
 from vnpy.trader.constant import Offset, Direction
-from vnpy.trader.object import TradeData, OrderData, TickData
-from vnpy.trader.engine import BaseEngine
+
 
 
 SETTINGS["log.active"] = True
 SETTINGS["log.level"] = INFO
 SETTINGS["log.console"] = True
-
-
-
-okex_setting = {
-    "API Key": "325d079f-dc52-4825-a2ae-906ba3f22a99",
-    "Secret Key": "698658F47261CD6E6A9D091232CE6D7A",
-    "Passphrase": "wudasea",
-    "会话数": 3,
-    "代理地址": "",
-    "代理端口": "",
-}
+from .gateway_config import okex_setting
 
 
 def run_child():
@@ -41,27 +26,23 @@ def run_child():
 
     event_engine = EventEngine()
     main_engine = MainEngine(event_engine)
+    alg_engine = main_engine.add_app(AlgoTradingApp)
+
     main_engine.add_gateway(OkexGateway)
-    okex_engine = main_engine.add_app(AlgoTradingApp)
     main_engine.connect(okex_setting, "OKEX")
 
 
-    sleep(10)
 
-    okex_engine.init_engine()
-    okex_engine.start_algo()
+    default_setting = {
+        "vt_symbol": "XRP-OKB.OKEX",
+        "direction": Direction.LONG.value,
+        "volume": 1.0,
+        "offset": Offset.OPEN.value,
+        "template_name":"BestLimitAlgo"
+    }
+    alg_engine.init_engine()
+    alg_engine.start_algo(default_setting)
 
-
-    """
-    okex_engine.init_all_strategies()
-    sleep(60)   # Leave enough time to complete strategy initialization
-    main_engine.write_log("OKEX策略全部初始化")
-    okex_engine.start_all_strategies()
-    main_engine.write_log("OKEX策略全部启动")
-    """
-
-    while True:
-        sleep(1)
 
 
 def run_parent():
@@ -81,7 +62,7 @@ def run_parent():
 
     while True:
         current_time = datetime.now().time()
-        trading = False
+        trading = True#orignal False
 
         # Check whether in trading period
         if (
@@ -107,7 +88,9 @@ def run_parent():
             print("子进程关闭成功")
 
         sleep(5)
+        print("shit")
 
 
 if __name__ == "__main__":
-    run_parent()
+    #run_parent()
+    run_child()
