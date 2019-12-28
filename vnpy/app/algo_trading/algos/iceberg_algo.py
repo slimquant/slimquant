@@ -69,6 +69,7 @@ class IcebergAlgo(AlgoTemplate):
         """"""
         self.last_tick = tick
 
+
     def on_order(self, order: OrderData):
         """"""
         msg = f"委托号：{order.vt_orderid}，委托状态：{order.status.value}"
@@ -102,6 +103,12 @@ class IcebergAlgo(AlgoTemplate):
         if not contract:
             return
 
+        #self.last_tick = self.get_tick(self.vt_symbol)
+        if not self.last_tick:
+            self.write_log(u"last_tick is None, no action will be taken!")
+            return
+
+
         # If order already finished, just send new order
         if not self.vt_orderid:
             order_volume = self.volume - self.traded
@@ -123,6 +130,8 @@ class IcebergAlgo(AlgoTemplate):
                 )
         # Otherwise check for cancel
         else:
+
+
             if self.direction == Direction.LONG:
                 if self.last_tick.ask_price_1 <= self.price:
                     self.cancel_order(self.vt_orderid)

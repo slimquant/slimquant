@@ -8,7 +8,7 @@ from vnpy.trader.object import (SubscribeRequest, OrderRequest, LogData)
 from vnpy.trader.utility import load_json, save_json, round_to
 
 from .template import AlgoTemplate
-
+from vnpy.trader.event import EVENT_LOG
 
 APP_NAME = "AlgoTrading"
 
@@ -229,6 +229,9 @@ class AlgoEngine(BaseEngine):
 
         log = LogData(msg=msg, gateway_name=APP_NAME)
         event = Event(EVENT_ALGO_LOG, data=log)
+        self.event_engine.put(event)
+
+        event = Event(EVENT_LOG, data=log)#dongzhuoyao
         self.event_engine.put(event)
 
     def put_setting_event(self, setting_name: str, setting: dict):

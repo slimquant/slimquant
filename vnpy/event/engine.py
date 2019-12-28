@@ -104,6 +104,8 @@ class EventEngine:
         """
         Put an event object into event queue.
         """
+        #if event.type == "eContract." and "LINKUSDT" in event.data.vt_symbol:
+        #    print("a")dongzhuoyao
         self._queue.put(event)
 
     def register(self, type: str, handler: HandlerType):

@@ -243,6 +243,33 @@ class BaseEngine(ABC):
         """"""
         pass
 
+from termcolor import colored
+class _MyFormatter(logging.Formatter):
+    def format(self, record):
+        date = colored("[%(asctime)s @%(filename)s:%(lineno)d]", "green")
+        msg = "%(message)s"
+        if record.levelno == logging.WARNING:
+            fmt = (
+                date + " " + colored("WRN", "red", attrs=["blink"]) + " " + msg
+            )
+        elif (
+            record.levelno == logging.ERROR
+            or record.levelno == logging.CRITICAL
+        ):
+            fmt = (
+                date
+                + " "
+                + colored("ERR", "red", attrs=["blink", "underline"])
+                + " "
+                + msg
+            )
+        else:
+            fmt = date + " " + msg
+        if hasattr(self, "_style"):
+            # Python3 compatibilty
+            self._style._fmt = fmt
+        self._fmt = fmt
+        return super(_MyFormatter, self).format(record)
 
 class LogEngine(BaseEngine):
     """
@@ -261,9 +288,8 @@ class LogEngine(BaseEngine):
         self.logger = logging.getLogger("VN Trader")
         self.logger.setLevel(self.level)
 
-        self.formatter = logging.Formatter(
-            "%(asctime)s  %(levelname)s: %(message)s"
-        )
+        self.formatter = _MyFormatter(datefmt="%m%d %H:%M:%S")#dongzhuoyao
+        #logging.Formatter("%(asctime)s  %(levelname)s: %(message)s")
 
         self.add_null_handler()
 
